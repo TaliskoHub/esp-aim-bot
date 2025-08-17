@@ -1,7 +1,9 @@
 --[[
-# TALISKOHUB - Interface Bonita (Estilo Latvix) + Aimbot + ESP (SEM BOTÕES DECORATIVOS)
+# TALISKOHUB - Aimbot, ESP, God Mode, Silent (Regulável)
+- Interface estilo Latvix, sem botões decorativos.
+- Opções funcionais: Aimbot, Esp Player, God Mode (exemplo básico), Silent (regulável de 1 a 100).
 - Clique na bolinha preta para abrir/fechar o menu.
-- Apenas os botões "Aimbot" e "Esp Player" aparecem e funcionam.
+- Silent Aimbot é apenas um exemplo de como controlar o "nível" (ajuste entre 1 e 100, mas funcionalidade depende do executor/jogo).
 - Script Roblox Lua em formato .md (markdown comentado).
 --]]
 
@@ -39,8 +41,8 @@ uicorner.CornerRadius = UDim.new(1,0)
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 265, 0, 140)
-mainFrame.Position = UDim2.new(0, 55, 0.5, -70)
+mainFrame.Size = UDim2.new(0, 265, 0, 270)
+mainFrame.Position = UDim2.new(0, 55, 0.5, -135)
 mainFrame.BackgroundColor3 = Color3.fromRGB(38,38,38)
 mainFrame.Visible = false
 mainFrame.Parent = gui
@@ -93,6 +95,8 @@ end
 
 local aimbotBtn = makeButton("Aimbot", 1)
 local espBtn = makeButton("Esp Player", 2)
+local godmodeBtn = makeButton("God Mode", 3)
+local silentBtn = makeButton("Silent ("..tostring(50)..")", 4)
 
 --[[
 ========================
@@ -254,6 +258,138 @@ espBtn.MouseButton1Click:Connect(function()
         espBtn.BackgroundColor3 = Color3.fromRGB(53,53,53)
         espBtn.Text = "Esp Player"
         updateESP()
+    end
+end)
+
+--[[
+========================
+==      GOD MODE      ==
+========================
+]]
+
+local godmodeON = false
+local godmodeConn = nil
+
+local function activateGodMode()
+    if godmodeConn then godmodeConn:Disconnect() end
+    godmodeConn = RunService.Stepped:Connect(function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = LocalPlayer.Character:FindFirstChildOfClass("Humanoid").MaxHealth
+        end
+    end)
+end
+
+local function deactivateGodMode()
+    if godmodeConn then godmodeConn:Disconnect() end
+end
+
+godmodeBtn.MouseButton1Click:Connect(function()
+    godmodeON = not godmodeON
+    if godmodeON then
+        godmodeBtn.BackgroundColor3 = Color3.fromRGB(50,200,50)
+        godmodeBtn.Text = "God Mode (ON)"
+        activateGodMode()
+    else
+        godmodeBtn.BackgroundColor3 = Color3.fromRGB(53,53,53)
+        godmodeBtn.Text = "God Mode"
+        deactivateGodMode()
+    end
+end)
+
+--[[
+========================
+==      SILENT        ==
+========================
+]]
+
+local silentON = false
+local silentLevel = 50 -- Valor inicial, de 1 a 100
+local silentSlider = nil
+local silentValueLabel = nil
+
+-- Função exemplo de silent (depende do executor/jogo, esse só altera visual e valor)
+local function activateSilent()
+    -- Aqui você pode colocar a lógica do seu Silent Aim customizável
+    -- Exemplo: print("Silent ativado! Nível:", silentLevel)
+end
+
+local function deactivateSilent()
+    -- Aqui você pode desativar o Silent
+    -- Exemplo: print("Silent desativado!")
+end
+
+silentBtn.MouseButton1Click:Connect(function()
+    silentON = not silentON
+    if silentON then
+        silentBtn.BackgroundColor3 = Color3.fromRGB(50,200,50)
+        silentBtn.Text = "Silent ("..tostring(silentLevel)..") (ON)"
+        activateSilent()
+        silentSlider.Visible = true
+        silentValueLabel.Visible = true
+    else
+        silentBtn.BackgroundColor3 = Color3.fromRGB(53,53,53)
+        silentBtn.Text = "Silent ("..tostring(silentLevel)..")"
+        deactivateSilent()
+        silentSlider.Visible = false
+        silentValueLabel.Visible = false
+    end
+end)
+
+-- Slider para regular o Silent
+silentSlider = Instance.new("Frame")
+silentSlider.Name = "SilentSlider"
+silentSlider.Size = UDim2.new(0, 160, 0, 10)
+silentSlider.Position = UDim2.new(0, 52, 0, 252)
+silentSlider.BackgroundColor3 = Color3.fromRGB(80,80,80)
+silentSlider.Parent = mainFrame
+silentSlider.Visible = false
+silentSlider.ZIndex = 105
+local sliderCorner = Instance.new("UICorner", silentSlider)
+sliderCorner.CornerRadius = UDim.new(0,5)
+
+local sliderBar = Instance.new("Frame")
+sliderBar.Size = UDim2.new(silentLevel/100, 0, 1, 0)
+sliderBar.Position = UDim2.new(0, 0, 0, 0)
+sliderBar.BackgroundColor3 = Color3.fromRGB(255,0,0)
+sliderBar.Parent = silentSlider
+sliderBar.ZIndex = 106
+local sliderBarCorner = Instance.new("UICorner", sliderBar)
+sliderBarCorner.CornerRadius = UDim.new(0,5)
+
+silentValueLabel = Instance.new("TextLabel")
+silentValueLabel.Size = UDim2.new(0, 40, 0, 18)
+silentValueLabel.Position = UDim2.new(0, 215, 0, 245)
+silentValueLabel.BackgroundTransparency = 1
+silentValueLabel.Text = tostring(silentLevel)
+silentValueLabel.TextColor3 = Color3.new(1,1,1)
+silentValueLabel.Font = Enum.Font.Gotham
+silentValueLabel.TextSize = 15
+silentValueLabel.Parent = mainFrame
+silentValueLabel.ZIndex = 106
+silentValueLabel.Visible = false
+
+silentSlider.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local moveConn
+        local releaseConn
+        moveConn = UserInputService.InputChanged:Connect(function(moveInput)
+            if moveInput.UserInputType == Enum.UserInputType.MouseMovement then
+                local mouseX = moveInput.Position.X
+                local sliderStart = silentSlider.AbsolutePosition.X
+                local sliderEnd = sliderStart + silentSlider.AbsoluteSize.X
+                local percent = math.clamp((mouseX - sliderStart) / (sliderEnd - sliderStart), 0, 1)
+                silentLevel = math.floor(percent * 99) + 1
+                sliderBar.Size = UDim2.new(percent, 0, 1, 0)
+                silentBtn.Text = silentON and "Silent ("..tostring(silentLevel)..") (ON)" or "Silent ("..tostring(silentLevel)..")"
+                silentValueLabel.Text = tostring(silentLevel)
+            end
+        end)
+        releaseConn = UserInputService.InputEnded:Connect(function(endInput)
+            if endInput.UserInputType == Enum.UserInputType.MouseButton1 then
+                if moveConn then moveConn:Disconnect() end
+                if releaseConn then releaseConn:Disconnect() end
+            end
+        end)
     end
 end)
 
